@@ -1,0 +1,22 @@
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore temporary files
+*.log
+*.tmp
+
+# Ignore IDE settings
+.idea/
+.vscode/
+
+# Ignore vendor or dependency folders (none for you, but good practice)
+vendor/
+
+# Ignore SQLite temporary files
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
+
+# Ignore environment files
+.env
