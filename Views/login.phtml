@@ -1,0 +1,51 @@
+<?php /** @var stdClass $view */ ?>
+<?php require('template/header.phtml') ?>
+
+    <main class="flex-grow-1">
+        <div class="row">
+            <div class="col-lg-5 col-md-6 col-sm-10 mx-auto">
+                <div class="card mt-4">
+                    <div class="card-body p-4">
+                        <?php
+                        // Display content if the user is successfully logged in
+                        if ($view->isLoggedIn):
+                            ?>
+                            <h3 class="card-title text-center mb-4">You are now Logged in</h3>
+                            <div class="alert alert-success">
+                                <?php echo $view->loginSuccess; ?>
+                            </div>
+                            <a href="logout.php" class="btn btn-outline-secondary w-100">Logout</a>
+                        <?php
+                        // Display the login form if the user is NOT logged in
+                        else:
+                            ?>
+                            <h3 class="card-title text-center mb-4">Log into your account</h3>
+                            <?php
+                            // Display error message if login failed on submission
+                            if (isset($view->loginError)):
+                                ?>
+                                <div class="alert alert-danger">
+                                    <?php echo $view->loginError;?>
+                                </div>
+                            <?php endif;?>
+                            <form action="login.php" method="POST">
+                                <div class="form-group mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                                    <small id="passwordHelpInline" class="text-muted">
+                                        Must be 12-14 characters long.
+                                    </small>
+                                </div>
+                                <input type="submit" name="submit" value="Login" class="btn btn-outline-secondary w-100">
+                            </form>
+                        <?php endif;?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+<?php require('template/footer.phtml') ?>

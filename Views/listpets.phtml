@@ -1,0 +1,107 @@
+<?php /** @var stdClass $view */ ?>
+<?php require('template/header.phtml') ?>
+    <main class="flex-grow-1">
+        <div class="card bg-light mb-4">
+            <div class="card-body">
+                <form action="listpets.php" method="GET">
+                    <div class="row g-3">
+                        <!-- Text Search -->
+                        <div class="col-md-5">
+                            <input type="text" class="form-control" name="search" id="search" placeholder="e.g. Buddy, Tabby, description..." value="<?php echo htmlspecialchars(isset($view->filters['search']) ? $view->filters['search'] : ''); ?>">
+                        </div>
+
+                        <!-- Species Checkboxes -->
+                        <div class="col-md-4 align-items-center gap-3 py-2">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="species" id="inlineCheckbox1" value="Dog" <?php if (isset($view->filters['species']) && $view->filters['species'] == 'Dog') echo 'selected'; ?>>
+                                <label class="form-check-label" for="inlineCheckbox1">Dog</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="species" id="inlineCheckbox2" value="Cat" <?php if (isset($view->filters['species']) && $view->filters['species'] == 'Cat') echo 'selected'; ?>>
+                                <label class="form-check-label" for="inlineCheckbox2">Cat</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="species" id="inlineCheckbox3" value="Parrot" <?php if (isset($view->filters['species']) && $view->filters['species'] == 'Parrot') echo 'selected'; ?>>
+                                <label class="form-check-label" for="inlineCheckbox3">Parrot</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="species" id="inlineCheckbox4" value="Rabbit" <?php if (isset($view->filters['species']) && $view->filters['species'] == 'Rabbit') echo 'selected'; ?>>
+                                <label class="form-check-label" for="inlineCheckbox4">Rabbit </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="species" id="inlineCheckbox5" value="Ferret" <?php if (isset($view->filters['species']) && $view->filters['species'] == 'Ferret') echo 'selected'; ?>>
+                                <label class="form-check-label" for="inlineCheckbox5">Ferret </label>
+                            </div>
+                        </div>
+
+
+                        <!-- Status Filters -->
+                        <div class="col-md-4">
+                            <div class="d-flex pt-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="status" value="" id="status_all" <?php if (empty($view->filters['status'])) echo 'checked'; ?>>
+                                    <label class="form-check-label" for="status_all">All</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="status" value="lost" id="status_lost" <?php if (isset($view->filters['status']) && $view->filters['status'] == 'lost') echo 'checked'; ?>>
+                                    <label class="form-check-label" for="status_lost">Lost 😔</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" value="found" id="status_found" <?php if (isset($view->filters['status']) && $view->filters['status'] == 'found') echo 'checked'; ?>>
+                                    <label class="form-check-label" for="status_found">Found 🥳</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button class="btn btn-outline-success" type="submit">Search</button>
+                            <a href="listpets.php" class="btn btn-outline-secondary ms-2">Clear All Filters</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <?php if (isset($view->dbMessage) && $view->dbMessage != ''): ?>
+            <div class="alert alert-info">
+                <?php echo $view->dbMessage; ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="row mt-3">
+            <?php if (empty($view->pets)): ?>
+                <div class="col">
+                    <p>No pets found.</p>
+                </div>
+            <?php else: ?>
+                <?php foreach ($view->pets as $petData): ?>
+                    <div class="col-lg-4 col-md-4 col-sm-6 mb-4">
+                        <div class="card h-100 border ">
+                            <div class="card-header">
+                                Pet ID:<?php echo $petData->getID(); ?>
+                            </div>
+                            <div class="card-img-container">
+                                <img class="card-img-top card-img-uniform" src="<?php echo $petData->getPhotoURL(); ?>" alt="<?php echo $petData->getName(); ?>">
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title"><?php echo $petData->getName(); ?></h5>
+                                <p class="card-text">Species: <?php echo $petData->getSpecies(); ?></p>
+                                <p class="card-text">Breed: <?php echo $petData->getBreed(); ?></p>
+                                <p class="card-text">Color: <?php echo $petData->getColor(); ?></p>
+                                <p class="card-text">Status: <?php echo $petData->getStatus(); ?></p>
+                                <p class="card-text flex-grow-1">Description: <?php echo $petData->getDescription(); ?></p>
+                                <div class="d-flex justify-content-between align-items-center mt-auto">
+                                    <div class="btn-group">
+                                        <a href="addsighting.php?pet_id=<?php echo $petData->getID(); ?>" class="btn btn-sm btn-secondary">Add Sighting</a>
+                                    </div>
+                                    <small class="text-muted"><?php echo $petData->getDateReported(); ?></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </main>
+<?php require('template/footer.phtml') ?>

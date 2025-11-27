@@ -1,0 +1,46 @@
+<?php /** @var stdClass $view */ ?>
+<?php require('template/header.phtml') ?>
+
+    <main class="flex-grow-1">
+        <?php
+        // Display error message if the user is unauthorized or has no sightings
+        if (isset($view->errorMessage)):
+            ?>
+            <div class="alert alert-warning">
+                <?php echo $view->errorMessage; ?>
+            </div>
+        <?php endif; ?>
+
+        <?php
+        // Only display the card layout if the sightings array is not empty
+        if (!empty($view->sightings)):
+            ?>
+            <div class="row mt-3">
+                <?php
+                // Loop through the enriched sighting data fetched from the controller
+                foreach ($view->sightings as $sighting):
+                    ?>
+                    <div class="col-lg-4 col-md-4 col-sm-6 mb-4">
+                        <div class="card h-100 border">
+                            <div class="card-header">
+                                Pet ID:<?php echo $sighting->getPetID(); ?>
+                            </div>
+                            <div class="card-body">
+                                <!-- Display enriched pet details -->
+                                <p class="card-text">Pet Name: <?php echo htmlspecialchars($sighting->getPetName()); ?></p>
+                                <p class="card-text">Species: <?php echo htmlspecialchars($sighting->getPetSpecies()); ?></p>
+
+                                <!-- Display sighting details -->
+                                <p class="card-text">Comment: <?php echo htmlspecialchars($sighting->getComment()); ?></p>
+                                <p class="card-text flex-grow-1">Latitude: <?php echo htmlspecialchars($sighting->getLatitude()); ?></p>
+                                <p class="card-text flex-grow-1">Longitude: <?php echo htmlspecialchars($sighting->getLongitude()); ?></p>
+                                <p class="card-text flex-grow-1">Time Reported: <?php echo htmlspecialchars($sighting->getTimestamp()); ?></p>
+
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </main>
+<?php require('template/footer.phtml') ?>

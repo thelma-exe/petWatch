@@ -1,0 +1,55 @@
+<?php /** @var stdClass $view */ ?>
+<?php require('template/header.phtml') ?>
+
+    <main class="flex-grow-1">
+        <?php
+        // Display the success or error message from the controller, if one is set
+        if (isset($view->formMessage) && $view->formMessage != '') :
+            ?>
+            <div class="alert alert-success">
+                <?php echo $view->formMessage?>
+            </div>
+        <?php endif; ?>
+
+        <?php
+        // Only display the form if the user is logged in
+        if($view->isLoggedIn):
+            ?>
+            <div class="row">
+                <div class="col-lg-8 col-md-10 mx-auto">
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <form action="addpet.php" method="POST" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <!-- Pet Details Inputs -->
+                                    <label class="form-label" for="name">Pet name</label>
+                                    <input class="form-control" type="text" name="petName" id="name" required>
+
+                                    <label class="form-label" for="species">Species</label>
+                                    <input class="form-control" type="text" name="species" id="species" required>
+
+                                    <label class="form-label" for="breed">Breed</label>
+                                    <input class="form-control" type="text" name="breed" id="breed">
+
+                                    <label class="form-label" for="color">Color</label>
+                                    <input class="form-control" type="text" name="color" id="color">
+
+                                    <label class="form-label" for="description">Description</label>
+                                    <input class="form-control" type="text" name="description" id="description">
+
+                                    <!-- Photo Upload Input -->
+                                    <label class="form-label col" for="photo">Attach a photo</label>
+                                    <input type="file" name="photo" id="photo">
+
+                                    <div class="form-group">
+                                        <input type="submit" class="btn btn-outline-primary mt-3" name="submit" value="Add Missing Pet">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endif;?>
+    </main>
+<?php require('template/footer.phtml') ?>

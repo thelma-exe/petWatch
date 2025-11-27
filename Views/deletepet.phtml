@@ -1,0 +1,16 @@
+<?php /** @var stdClass $view */ ?>
+<?php require('template/header.phtml') ?>
+
+    <main class="flex-grow-1">
+        <?php
+        // Check if a success or error message was set by the controller
+        if (isset($view->formMessage)):
+            ?>
+            <div class="alert alert-success" role="alert">
+                <?php echo $view->formMessage?>
+            </div>
+            <!-- Provide a link to navigate back to the user's pet listings -->
+            <button type="button" class="btn btn-light"><a href="mypets.php">Return to my listings</a></button>
+        <?php endif; ?>
+    </main>
+<?php require('template/footer.phtml') ?>
