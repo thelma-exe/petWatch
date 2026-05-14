@@ -1,0 +1,61 @@
+<?php /** @var stdClass $view */ ?>
+<?php require('template/header.phtml') ?>
+
+    <main class="flex-grow-1">
+
+        <?php
+        // Display error message if the user is not logged in or unauthorized
+        if (isset($view->errorMessage)):
+            ?>
+            <div class="alert alert-primary" role="alert">
+                <?php echo $view->errorMessage; ?>
+            </div>
+        <?php else: ?>
+            <!-- User is authorized: display content -->
+
+            <!-- Add pet button-->
+            <a href="addpet.php" class="btn btn-outline-info"">Add missing pet</a>
+
+            <!-- Check if pet array is empty-->
+            <?php if (empty($view->pets)): ?>
+                <p>You have not reported any pets yet.</p>
+            <?php else: ?>
+                <div class="row mt-3">
+                    <?php
+                    // Loop through and display each pet listing card
+                    foreach ($view->pets as $pet):
+                        ?>
+                        <div class="col-lg-4 col-md-4 col-sm-6 mb-4">
+                            <div class="card h-100 border">
+                                <div class="card-header">
+                                    Pet ID:<?php echo $pet->getID(); ?>
+                                </div>
+                                <div class="card-img-container">
+                                    <!-- Display pet photo -->
+                                    <img class="card-img-top card-img-uniform" src="<?php echo $pet->getPhotoURL(); ?>" alt="<?php echo $pet->getName(); ?>" >
+                                </div>
+                                <div class="card-body">
+                                    <!-- Display pet details using accessor methods -->
+                                    <h5 class="card-title"><?php echo $pet->getName(); ?></h5>
+                                    <p class="card-text">Species: <?php echo $pet->getSpecies(); ?></p>
+                                    <p class="card-text">Breed: <?php echo $pet->getBreed(); ?></p>
+                                    <p class="card-text">Status: <?php echo $pet->getStatus(); ?></p>
+                                    <p class="card-text flex-grow-1">Description: <?php echo $pet->getDescription(); ?></p>
+                                    <div class="btn-group">
+                                        <!-- Link to view sightings for this pet -->
+                                        <a href="pet.php?id=<?php echo $pet->getID(); ?>" class="btn btn-outline-info">View Sightings</a>
+                                        <!-- Link to edit pet details -->
+                                        <a href="editpet.php?id=<?php echo $pet->getID(); ?>" class="btn btn-outline-primary">Edit</a>
+                                        <!-- Link to delete pet, requiring confirmation -->
+                                        <a href="deletepet.php?id=<?php echo $pet->getID()?>" onclick="return confirm('Are you sure?')" class="btn btn-outline-danger">Delete</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+    </main>
+
+<?php require('template/footer.phtml') ?>

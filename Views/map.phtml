@@ -1,0 +1,149 @@
+<?php /** @var stdClass $view */ ?>
+<?php require('template/header.phtml') ?>
+
+<main class="flex-grow-1">
+    <div class="row g-3">
+
+        <!-- Left column: sightings list -->
+        <div class="col-md-4">
+            <h5>Recent Sightings</h5>
+            <div id="sightings-list" style="height: 500px; overflow-y: auto;"></div>
+        </div>
+
+        <!-- Right column: map -->
+        <div class="col-md-8">
+            <div id="map" style="height: 500px; border-radius: 8px;"></div>
+        </div>
+
+    </div>
+</main>
+
+<!--Load Leaflet.js CSS and JS from CDN-->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<?php
+// Generate a random token and store in session for AJAX security
+$token = substr(str_shuffle(MD5(microtime())), 0, 20);
+$_SESSION['ajaxToken'] = $token;
+?>
+
+<script>
+    /**
+     * PetMap class - manages the Leaflet map, geolocation, and AJAX marker loading.
+     * and the sightings list panel.
+     */
+    class PetMap {
+        /**
+         * Constructor - initialises the map, tiles, geolocation and loads markers.
+         * @param {string} mapElementId - The ID of the HTML element to render the map in.
+         * @param {string} listElementId - The ID of the HTML element to render the list in.
+         * @param {string} apiUrl - The URL of the AJAX endpoint to fetch sightings from.
+         */
+        constructor(mapElementId, listElementId, apiUrl) {
+            this.apiUrl = apiUrl;
+            this.listElement= document.getElementById(listElementId);
+            this.markers = [];
+
+            // Initialised the map centred on Salford as a fallback
+            this.map = L.map(mapElementId).setView([53.483, -2.244], 13);
+
+            // Add OpenStreetMap tiles map background layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(this.map);
+
+            // Centre map on user's location and load markers
+            this.centreOnUser();
+            this.loadMarkers();
+        }
+
+        /**
+         * Uses the browser Geolocation API to centre the map on the user's location.
+         * Falls back to Salford if geolocation is unavailable or denied.
+         */
+        centreOnUser() {
+            if("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    var userLatitude = position.coords.latitude;
+                    var userLongitude = position.coords.longitude;
+                    this.map.setView([userLatitude,userLongitude], 13);
+                }, () => {
+                    // The geolocation failed, hence the map will stay on Salford as fallback
+                    console.log('Geolocation unavailable, using defaukt location');
+                });
+            }
+        }
+
+        /**
+         * Fetches sighting data from the API via AJAX and adds markers to the map.
+         * Uses XMLHttpRequest to retrieve JSON data from the server.
+         */
+        loadMarkers() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', this.apiUrl + '?token=<?php echo $token; ?>', true);
+            xhr.send();
+
+            // After response, parse the JSON and add markers to the map
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var sightings = JSON.parse(xhr.responseText);
+
+                    //Loop through each sighting, and place a marker on the map
+                    sightings.forEach((sighting) => {
+                        var marker = this.addMarker(sighting);
+                        this.addListItem(sighting, marker);
+                    });
+                }
+            }
+        }
+
+        /**
+         * Creates a single Leaflet marker with a popup for a given sighting.
+         * @param {object} sighting - A sighting object with lat, lng, pet_name, etc.
+         */
+        addMarker(sighting) {
+            var popupText = '<strong>' + sighting.pet_name + '</strong> (' + sighting.pet_species + ')'
+                + '<br>' + sighting.comment
+                + '<br><small>' + sighting.timestamp + '</small>';
+
+            var marker = L.marker([sighting.latitude, sighting.longitude])
+                .addTo(this.map)
+                .bindPopup(popupText);
+
+            return marker;
+        }
+
+        /**
+         * Adds a clickable list item for a sighting that flies the map to its location.
+         * @param {object} sighting - The sighting data object.
+         * @param {L.Marker} marker - The corresponding Leaflet marker.
+         */
+        addListItem(sighting, marker) {
+            var item =document.createElement('div');
+            item.style.cssText = 'padding: 10px; border-bottom: 1px solid #dee2e6; cursor: pointer;';
+
+            item.innerHTML = '<strong>' + sighting.pet_name + '</strong> <span class="badge bg-info">' + sighting.pet_species + '</span>'
+                + '<br><small class="text-muted">' + sighting.comment + '</small>';
+
+            // Clicking a list item takes the map to the sighting's location and opens a popup
+            item.addEventListener('click', () => {
+                this.map.flyTo([sighting.latitude,sighting.longitude], 16);
+                marker.openPopup();
+            });
+
+            // Highlight and Hover effects
+            item.addEventListener('mouseover', () => { item.style.background = '#edf4fa'; });
+            item.addEventListener('mouseout', () => { item.style.background = ''; });
+
+            this.listElement.appendChild(item);
+        }
+
+    }
+
+        // Initialise the PetMap when the page loads
+        var petMap = new PetMap('map', 'sightings-list', 'apisightings.php');
+
+</script>
+
+<?php require('template/footer.phtml') ?>

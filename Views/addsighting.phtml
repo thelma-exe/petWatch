@@ -1,0 +1,108 @@
+<?php /** @var stdClass $view */ ?>
+<?php require('template/header.phtml') ?>
+
+    <main class="flex-grow-1">
+        <?php
+        // Determine if a message has been set by the controller
+        $hasMessage = isset($view->formMessage) && $view->formMessage != "";
+        ?>
+
+        <?php
+        // Display error messages from the controller
+        if (isset($view->formMessage) && $view->formMessage != ""):
+            ?>
+            <div class="alert alert-success">
+                <strong><?php echo $view->formMessage?></strong>
+            </div>
+        <?php endif; ?>
+
+        <?php
+        // Only proceed if the user is logged in
+        if (isset($_SESSION['username'])):
+            ?>
+            <?php
+            // Check if a specific pet is selected OR if a list of all lost pets is available
+            if ($view->pet !== null || !empty($view->allLostPets)):
+                ?>
+                <div class="row">
+                    <div class="col-lg-8 col-md-10 mx-auto">
+                        <div class="card bg-light mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <?php if ($view->pet !== null): ?>
+                                        <!-- Title for pre-selected pet -->
+                                        Submit Sighting for "<?php echo htmlspecialchars($view->pet->getName()); ?>"
+                                    <?php else: ?>
+                                        <!-- Title when user needs to select a pet -->
+                                        Submit a New Sighting
+                                    <?php endif; ?>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form action="addsighting.php" method="POST">
+
+                                    <?php
+                                    // Conditional display: Show pre-selected pet details (if fetched from a pet's page)
+                                    if ($view->pet !== null):
+                                        ?>
+                                        <input type="hidden" name="pet_id" value="<?php echo $view->pet->getId(); ?>">
+                                        <div class="mb-3">
+                                            <label class="form-label">Missing pet </label>
+                                            <input class="form-control" type="text" value="<?php echo htmlspecialchars($view->pet->getName()); ?>" readonly>
+                                        </div>
+                                    <?php
+                                    // Conditional display: Show dropdown list of all lost pets (if no pet was pre-selected)
+                                    else:
+                                        ?>
+                                        <div class="mb-3">
+                                            <label for="pet_id" class="form-label">Select Pet</label>
+                                            <select class="form-select" name="pet_id" id="pet_id" required>
+                                                <option value="">-- Please select a pet --</option>
+                                                <?php
+                                                // Loop through and list all lost pets for selection
+                                                foreach ($view->allLostPets as $pet):
+                                                    ?>
+                                                    <option value="<?php echo $pet->getID(); ?>">
+                                                        <?php echo htmlspecialchars($pet->getName()) . " (ID: " . $pet->getID() . ")"; ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <div class="mb-3">
+                                        <label for="comment" class="form-label">Comments(optional)</label>
+                                        <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="e.g. Spotted near the park..."></textarea>
+                                    </div>
+
+                                    <p><strong>Where did you see the pet</strong></p>
+
+                                    <!-- Latitude and Longitude Inputs -->
+                                    <div class="row mb-3">
+                                        <div class="col">
+                                            <label for="latitude">Latitude</label>
+                                            <input type="text" class="form-control" id="latitude" name="latitude" placeholder="0.0" required>
+                                        </div>
+                                        <div class="col">
+                                            <label for="longitude">Longitude</label>
+                                            <input type="text" class="form-control" id="longitude" name="longitude" placeholder="0.0" required>
+                                        </div>
+                                    </div>
+
+                                    <input type="submit" class="btn btn-secondary mt-3" name="submit" value="Add Sighting">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php
+            // Display message if there are no lost pets to report sightings for
+            elseif (empty($view->allLostPets) && !$hasMessage):
+                ?>
+                <div class="alert alert-info">
+                    There are currently no missing pets to report sightings for!
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+    </main>
+<?php require('template/footer.phtml') ?>

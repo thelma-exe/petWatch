@@ -1,0 +1,229 @@
+<?php /** @var stdClass $view */ ?>
+<?php require('template/header.phtml') ?>
+    <main class="flex-grow-1">
+        <div class="card bg-light mb-4">
+            <div class="card-body">
+                <form action="listpets.php" method="GET">
+                    <div class="row g-3">
+                        <!-- Text Search -->
+                        <div class="col-md-5">
+                            <input type="text" class="form-control" name="search" id="search" placeholder="e.g. Buddy, Tabby, description..." value="<?php echo htmlspecialchars(isset($view->filters['search']) ? $view->filters['search'] : ''); ?>">
+                            <!-- Live search results dropdown -->
+                            <div id="live-results"
+                                 style="position:absolute; z-index:1000; width:100%; background:white;
+                                    border:1px solid #dee2e6; border-radius:4px; display:none; max-height:300px; overflow-y:auto;">
+                            </div>
+                        </div>
+
+                        <!-- Species Checkboxes -->
+                        <div class="col-md-4 align-items-center gap-3 py-2">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="species[]" id="inlineCheckbox1" value="Dog" <?php if (isset($view->filters['species']) && in_array('Dog', (array)$view->filters['species'])) echo 'checked'; ?>>
+                                <label class="form-check-label" for="inlineCheckbox1">Dog</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="species[]" id="inlineCheckbox2" value="Cat" <?php if (isset($view->filters['species']) && in_array('Cat', (array)$view->filters['species'])) echo 'checked'; ?>>
+                                <label class="form-check-label" for="inlineCheckbox2">Cat</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="species[]" id="inlineCheckbox3" value="Parrot" <?php if (isset($view->filters['species']) && in_array('Parrot', (array)$view->filters['species'])) echo 'checked'; ?>>
+                                <label class="form-check-label" for="inlineCheckbox3">Parrot</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="species[]" id="inlineCheckbox4" value="Rabbit" <?php if (isset($view->filters['species']) && in_array('Rabbit', (array)$view->filters['species'])) echo 'checked'; ?>>
+                                <label class="form-check-label" for="inlineCheckbox4">Rabbit </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="species[]" id="inlineCheckbox5" value="Ferret" <?php if (isset($view->filters['species']) && in_array('Ferret', (array)$view->filters['species'])) echo 'checked'; ?>>
+                                <label class="form-check-label" for="inlineCheckbox5">Ferret </label>
+                            </div>
+                        </div>
+
+
+                        <!-- Status Filters -->
+                        <div class="col-md-4">
+                            <div class="d-flex pt-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="status" value="" id="status_all" <?php if (empty($view->filters['status'])) echo 'checked'; ?>>
+                                    <label class="form-check-label" for="status_all">All</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="status" value="lost" id="status_lost" <?php if (isset($view->filters['status']) && in_array('lost', $view->filters['status'])) echo 'checked'; ?>>
+                                    <label class="form-check-label" for="status_lost">Lost 😔</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" value="found" id="status_found" <?php if (isset($view->filters['status']) && in_array('found', $view->filters['status'])) echo 'checked'; ?>>
+                                    <label class="form-check-label" for="status_found">Found 🥳</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button class="btn btn-outline-success" type="submit">Search</button>
+                            <a href="listpets.php" class="btn btn-outline-secondary ms-2">Clear All Filters</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <?php if (isset($view->dbMessage) && $view->dbMessage != ''): ?>
+            <div class="alert alert-info">
+                <?php echo $view->dbMessage; ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="row mt-3">
+            <?php if (empty($view->pets)): ?>
+                <div class="col">
+                    <p>No pets found.</p>
+                </div>
+            <?php else: ?>
+                <?php foreach ($view->pets as $petData): ?>
+                    <div class="col-lg-4 col-md-4 col-sm-6 mb-4">
+                        <div class="card h-100 border ">
+                            <div class="card-header">
+                                Pet ID:<?php echo $petData->getID(); ?>
+                            </div>
+                            <div class="card-img-container">
+                                <img class="card-img-top card-img-uniform" src="<?php echo $petData->getPhotoURL(); ?>" alt="<?php echo $petData->getName(); ?>">
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title"><?php echo $petData->getName(); ?></h5>
+                                <p class="card-text">Species: <?php echo $petData->getSpecies(); ?></p>
+                                <p class="card-text">Breed: <?php echo $petData->getBreed(); ?></p>
+                                <p class="card-text">Color: <?php echo $petData->getColor(); ?></p>
+                                <p class="card-text">Status: <?php echo $petData->getStatus(); ?></p>
+                                <p class="card-text flex-grow-1">Description: <?php echo $petData->getDescription(); ?></p>
+                                <div class="d-flex justify-content-between align-items-center mt-auto">
+                                    <div class="btn-group">
+                                        <a href="addsighting.php?pet_id=<?php echo $petData->getID(); ?>" class="btn btn-sm btn-secondary">Add Sighting</a>
+                                    </div>
+                                    <small class="text-muted"><?php echo $petData->getDateReported(); ?></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </main>
+
+<?php
+// Generate a random token and store in session for AJAX security
+$token = substr(str_shuffle(MD5(microtime())), 0, 20);
+$_SESSION['ajaxToken'] = $token;
+?>
+
+    <script>
+        /**
+         * LiveSearch class - handles real-time pet search via AJAX.
+         * Sends a request to the search API on each keystroke and renders results.
+         */
+        class LiveSearch {
+            /**
+             * Constructor - sets up the search input listener and result container.
+             * @param {string} inputId - The ID of the search input element.
+             * @param {string} resultsId - The ID of the results container element
+             * @param {string} apiUrl - The URL of the search API endpoint.
+             */
+            constructor(inputId, resultsId, apiUrl) {
+                this.apiUrl = apiUrl;
+                this.resultsContainer = document.getElementById(resultsId);
+                this.debounceTimer = null;
+
+                // Attach keyup event listener to the search input
+                document.getElementById(inputId).addEventListener('keyup', (e) => {
+                    this.onKeyUp(e.target.value);
+                });
+            }
+            /**
+             * Handles keyup events with debouncing to avoid excessive API calls.
+             * Waits 300ms after the user stops typing before sending the request.
+             * @param {string} searchTerm - The current value of the search input.
+             */
+            onKeyUp(searchTerm) {
+                // Clear the previous timer to debounce rapid keystroked
+                clearTimeout(this.debounceTimer);
+
+                // Clear the results if the search box is empty
+                if (searchTerm.trim() === '') {
+                    this.resultsContainer.innerHTML = '';
+                    this.resultsContainer.style.display = 'none';
+                    return;
+                }
+
+                // Wait for 300ms(0.3s) before sending the AJAX request
+                this.debounceTimer = setTimeout(() => {
+                    this.search(searchTerm.trim());
+                }, 300);
+            }
+            /**
+             * Sends an AJAX GET request to the search API with the given searchTerm.
+             * @param {string} searchTerm - The search term to send to the API.
+             */
+            search(searchTerm) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', this.apiUrl + '?searchTerm=' + encodeURIComponent(searchTerm) + '&token=<?php echo $token; ?>', true);
+                xhr.send();
+
+                // Handle the response when it arrives
+                xhr.onreadystatechange = () => {
+                    if (xhr.readyState === 4 && xhr.status == 200) {
+                        var pets = JSON.parse(xhr.responseText);
+                        this.renderDropdown(pets);
+                    }
+                };
+            }
+
+            /**
+             * Renders matching pets as a dropdown list below the search input.
+             * @param {Array} pets - Array of pet objects from the API.
+             */
+            renderDropdown(pets) {
+                this.resultsContainer.innerHTML = '';
+
+                // Hide if no results
+                if (pets.length === 0) {
+                    this.resultsContainer.style.display = 'none';
+                    return;
+                }
+
+                // Build a list item for each matching pet
+                pets.slice(0, 8).forEach((pet) => {
+                    var item = document.createElement('div');
+                    item.style.cssText = 'padding:10px 14px; cursor:pointer; border-bottom:1px solid #f0f0f0; display:flex; align-items:center; gap:10px;';
+
+                    var statusBadge = pet.status === 'lost'
+                        ? '<span class="badge bg-danger" style="font-size:10px;">Lost</span>'
+                        : '<span class="badge bg-success" style="font-size:10px;">Found</span>';
+
+                    item.innerHTML = `<img src="${pet.photo_url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;">
+                    <div>
+                        <strong>${pet.name}</strong> ${statusBadge}
+                        <span class="badge bg-info" style="font-size:10px;">${pet.species}</span>
+                        <br><small class="text-muted">${pet.breed}</small>
+                    </div>`;
+
+                    // Clicking a suggestion fills the search box and submits the form
+                    item.addEventListener('click', () => {
+                        document.getElementById('search').value = pet.name;
+                        this.resultsContainer.style.display = 'none';
+                        document.querySelector('form').submit();
+                    });
+
+                    item.addEventListener('mouseover', () => { item.style.background = '#f8f9fa'; });
+                    item.addEventListener('mouseout', () => { item.style.background = 'white'; });
+
+                    this.resultsContainer.appendChild(item);
+                });
+
+                // Show the dropdown
+                this.resultsContainer.style.display = 'block';
+            }
+        }
+        // Initialise the LiveSearch when the page loads
+        var liveSearch = new LiveSearch('search', 'live-results', 'apisearch.php');
+    </script>
+<?php require('template/footer.phtml') ?>
